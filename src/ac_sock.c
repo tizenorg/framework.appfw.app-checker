@@ -37,14 +37,27 @@ static int __connect_client_sock(int sockfd, const struct sockaddr *saptr, sockl
 
 static inline void __set_sock_option(int fd, int cli)
 {
+	int ret;
 	int size;
 	struct timeval tv = { 5, 200 * 1000 };	/*  5.2 sec */
 
 	size = AC_SOCK_MAXBUFF;
-	setsockopt(fd, SOL_SOCKET, SO_SNDBUF, &size, sizeof(size));
-	setsockopt(fd, SOL_SOCKET, SO_RCVBUF, &size, sizeof(size));
-	if (cli)
-		setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+	ret = setsockopt(fd, SOL_SOCKET, SO_SNDBUF, &size, sizeof(size));
+	if ( ret < 0 ) {
+		_E("setsockopt error");
+	}
+
+	ret = setsockopt(fd, SOL_SOCKET, SO_RCVBUF, &size, sizeof(size));
+	if ( ret < 0 ) {
+		_E("setsockopt error");
+	}
+
+	if (cli) {
+		ret = setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+		if ( ret < 0 ) {
+			_E("setsockopt error");
+		}
+	}
 }
 
 int _create_server_sock()
@@ -158,7 +171,7 @@ static int __connect_client_sock(int fd, const struct sockaddr *saptr, socklen_t
 	error = 0;
 	if ((ret = connect(fd, (struct sockaddr *)saptr, salen)) < 0) {
 		if (errno != EAGAIN && errno != EINPROGRESS) {
-			fcntl(fd, F_SETFL, flags);	
+			(void)fcntl(fd, F_SETFL, flags);	
 			return (-2);
 		}
 	}
@@ -188,7 +201,7 @@ static int __connect_client_sock(int fd, const struct sockaddr *saptr, socklen_t
 		return (-1);	/* select error: sockfd not set*/
 
  done:
-	fcntl(fd, F_SETFL, flags);	
+	(void)fcntl(fd, F_SETFL, flags);
 	if (error) {
 		close(fd);	
 		errno = error;

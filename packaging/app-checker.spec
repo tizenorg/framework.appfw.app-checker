@@ -1,11 +1,17 @@
 Name:	    app-checker
 Summary:    App Checker
-Version:    0.0.16
+Version:    0.0.20
 Release:    1
 Group:      System/Libraries
-License:    Apache-2.0
+License:    Apache License, Version 2.0
 Source0:    %{name}-%{version}.tar.gz
+
+Requires(post): /sbin/ldconfig
+Requires(postun): /sbin/ldconfig
+
+
 BuildRequires: cmake
+
 BuildRequires: pkgconfig(dlog)
 BuildRequires: pkgconfig(glib-2.0)
 
@@ -44,23 +50,25 @@ libapp-checker server (developement files)
 
 
 %build
-
-%cmake . 
+%if 0%{?sec_build_binary_debug_enable}
+export CFLAGS="$CFLAGS -DTIZEN_DEBUG_ENABLE"
+export CXXFLAGS="$CXXFLAGS -DTIZEN_DEBUG_ENABLE"
+export FFLAGS="$FFLAGS -DTIZEN_DEBUG_ENABLE"
+%endif
+export CFLAGS="$CFLAGS -Wall -Werror -Wno-unused-function"
+CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS" cmake . -DCMAKE_INSTALL_PREFIX=/usr
 
 make %{?jobs:-j%jobs}
 
 %install
 rm -rf %{buildroot}
 %make_install
-mkdir -p %{buildroot}/usr/lib/ac-plugins
 
-mkdir -p %{buildroot}/usr/share/license
-cp LICENSE %{buildroot}/usr/share/license/%{name}
-cp LICENSE %{buildroot}/usr/share/license/%{name}-devel
-cp LICENSE %{buildroot}/usr/share/license/%{name}-server
-cp LICENSE %{buildroot}/usr/share/license/%{name}-server-devel
 
-%post -p /sbin/ldconfig
+%post
+
+/sbin/ldconfig
+mkdir -p /usr/lib/ac-plugins
 
 %postun -p /sbin/ldconfig
 
@@ -68,30 +76,24 @@ cp LICENSE %{buildroot}/usr/share/license/%{name}-server-devel
 %files
 %manifest app-checker.manifest
 %defattr(-,root,root,-)
-%{_libdir}/libapp-checker.so.0
-%{_libdir}/libapp-checker.so.0.1.0
-/usr/lib/ac-plugins
-/usr/share/license/%{name}
-
+/usr/lib/libapp-checker.so.0
+/usr/lib/libapp-checker.so.0.1.0
 
 %files devel
 %defattr(-,root,root,-)
-%{_libdir}/libapp-checker.so
-%{_libdir}/pkgconfig/app-checker.pc
+/usr/lib/libapp-checker.so
+/usr/lib/pkgconfig/app-checker.pc
 /usr/include/app-checker/app-checker.h
-/usr/share/license/%{name}-devel
 
 %files server
 %manifest app-checker.manifest
 %defattr(-,root,root,-)
-%{_libdir}/libapp-checker-server.so.0
-%{_libdir}/libapp-checker-server.so.0.1.0
-/usr/share/license/%{name}-server
+/usr/lib/libapp-checker-server.so.0
+/usr/lib/libapp-checker-server.so.0.1.0
 
 %files server-devel
 %defattr(-,root,root,-)
-%{_libdir}/libapp-checker-server.so
-%{_libdir}/pkgconfig/app-checker-server.pc
+/usr/lib/libapp-checker-server.so
+/usr/lib/pkgconfig/app-checker-server.pc
 /usr/include/app-checker/app-checker-server.h
-/usr/share/license/%{name}-server-devel
 

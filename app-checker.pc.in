@@ -2,7 +2,7 @@
 
 prefix=/usr
 exec_prefix=@EXEC_PREFIX@
-libdir=@LIB_INSTALL_DIR@
+libdir=@LIBDIR@
 includedir=@INCLUDEDIR@
 
 Name: libapp-checker

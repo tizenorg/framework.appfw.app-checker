@@ -35,7 +35,7 @@
 #include "ac_sock.h"
 #include "internal.h"
 
-#define PLUGINS_PREFIX LIBPREFIX "/ac-plugins"
+#define PLUGINS_PREFIX "/usr/lib/ac-plugins"
 #define MAX_LOCAL_BUFSZ 	512
 
 #ifndef SLPAPI
@@ -82,7 +82,7 @@ static int __check_launch_privilege(const char *pkg_name, const char *pkg_type, 
 		if (strncmp(type_t->pkg_type, pkg_type, MAX_PACKAGE_TYPE_SIZE) == 0) {
 			for (iter2 = type_t->so_list; iter2 != NULL; iter2 = g_slist_next(iter2)) {
 				so_t = iter2->data;
-				_D("type : %s / so name : %s / func : %x", type_t->pkg_type, so_t->so_name, so_t->ac_check);
+				SECURE_LOGD("type : %s / so name : %s / func : %x", type_t->pkg_type, so_t->so_name, so_t->ac_check);
 				if (so_t->ac_check && so_t->ac_check(pkg_name) < 0) {
 					if(pid > 0)
 						__send_to_sigkill(pid);					
@@ -164,7 +164,7 @@ static gboolean __ac_handler(gpointer data)
 
 	ad = (struct ac_data *)g_base64_decode((const gchar*)pkt->data, (gsize *)&size);
 
-	_D("cmd : %d, pkgname : %s, pkgtype : %s", pkt->cmd, ad->pkg_name, ad->pkg_type);
+	SECURE_LOGD("cmd : %d, pkgname : %s, pkgtype : %s", pkt->cmd, ad->pkg_name, ad->pkg_type);
 
 	switch (pkt->cmd) {
 	case AC_CHECK:
@@ -309,7 +309,7 @@ int __initialize()
 			continue;
 		
 		snprintf(buf,MAX_LOCAL_BUFSZ,"%s/%s",PLUGINS_PREFIX,dentry->d_name);
-		_D("type : %s", dentry->d_name);
+		SECURE_LOGD("type : %s", dentry->d_name);
 
 		type_t = malloc(sizeof(ac_type_list_t));
 		if(type_t == NULL) {
@@ -335,7 +335,7 @@ int __initialize()
 			if(sub_dentry->d_type == DT_DIR) 
 				continue;
 			snprintf(buf2,MAX_LOCAL_BUFSZ,"%s/%s", buf, sub_dentry->d_name);
-			_D("so_name : %s", buf2);
+			SECURE_LOGD("so_name : %s", buf2);
 			
 			handle = dlopen(buf2, RTLD_LAZY);
 			if(handle == NULL) 
