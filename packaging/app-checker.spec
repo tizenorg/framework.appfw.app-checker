@@ -1,9 +1,9 @@
 Name:	    app-checker
 Summary:    App Checker
-Version:    0.0.8
-Release:    2
+Version:    0.0.20
+Release:    1
 Group:      System/Libraries
-License:    Apache License, Version 2.0
+License:    Apache-2.0
 Source0:    %{name}-%{version}.tar.gz
 
 Requires(post): /sbin/ldconfig
@@ -50,7 +50,12 @@ libapp-checker server (developement files)
 
 
 %build
-
+%if 0%{?sec_build_binary_debug_enable}
+export CFLAGS="$CFLAGS -DTIZEN_DEBUG_ENABLE"
+export CXXFLAGS="$CXXFLAGS -DTIZEN_DEBUG_ENABLE"
+export FFLAGS="$FFLAGS -DTIZEN_DEBUG_ENABLE"
+%endif
+export CFLAGS="$CFLAGS -Wall -Werror -Wno-unused-function"
 CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS" cmake . -DCMAKE_INSTALL_PREFIX=/usr
 
 make %{?jobs:-j%jobs}
@@ -69,6 +74,7 @@ mkdir -p /usr/lib/ac-plugins
 
 
 %files
+%manifest app-checker.manifest
 %defattr(-,root,root,-)
 /usr/lib/libapp-checker.so.0
 /usr/lib/libapp-checker.so.0.1.0
@@ -80,6 +86,7 @@ mkdir -p /usr/lib/ac-plugins
 /usr/include/app-checker/app-checker.h
 
 %files server
+%manifest app-checker.manifest
 %defattr(-,root,root,-)
 /usr/lib/libapp-checker-server.so.0
 /usr/lib/libapp-checker-server.so.0.1.0

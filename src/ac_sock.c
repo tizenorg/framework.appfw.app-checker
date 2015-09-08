@@ -37,14 +37,27 @@ static int __connect_client_sock(int sockfd, const struct sockaddr *saptr, sockl
 
 static inline void __set_sock_option(int fd, int cli)
 {
+	int ret;
 	int size;
 	struct timeval tv = { 5, 200 * 1000 };	/*  5.2 sec */
 
 	size = AC_SOCK_MAXBUFF;
-	setsockopt(fd, SOL_SOCKET, SO_SNDBUF, &size, sizeof(size));
-	setsockopt(fd, SOL_SOCKET, SO_RCVBUF, &size, sizeof(size));
-	if (cli)
-		setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+	ret = setsockopt(fd, SOL_SOCKET, SO_SNDBUF, &size, sizeof(size));
+	if ( ret < 0 ) {
+		_E("setsockopt error");
+	}
+
+	ret = setsockopt(fd, SOL_SOCKET, SO_RCVBUF, &size, sizeof(size));
+	if ( ret < 0 ) {
+		_E("setsockopt error");
+	}
+
+	if (cli) {
+		ret = setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+		if ( ret < 0 ) {
+			_E("setsockopt error");
+		}
+	}
 }
 
 int _create_server_sock()
@@ -67,19 +80,21 @@ int _create_server_sock()
 		}
 	}
 
-	bzero(&saddr, sizeof(saddr));
+	memset(&saddr, 0, sizeof(saddr));
 	saddr.sun_family = AF_UNIX;
 	snprintf(saddr.sun_path, UNIX_PATH_MAX, "%s",AC_SOCK_NAME);
 	unlink(saddr.sun_path);
 	
 	if (bind(fd, (struct sockaddr *)&saddr, sizeof(saddr)) < 0) {
 		_E("bind error");
+		close(fd);
 		return -1;
 	}
 
 	if (chmod(saddr.sun_path, (S_IRWXU | S_IRWXG | S_IRWXO)) < 0) {
 		/* Flawfinder: ignore*/
 		_E("failed to change the socket permission");
+		close(fd);
 		return -1;
 	}
 
@@ -87,6 +102,7 @@ int _create_server_sock()
 
 	if (listen(fd, 10) == -1) {
 		_E("listen error");
+		close(fd);
 		return -1;
 	}	
 
@@ -155,7 +171,7 @@ static int __connect_client_sock(int fd, const struct sockaddr *saptr, socklen_t
 	error = 0;
 	if ((ret = connect(fd, (struct sockaddr *)saptr, salen)) < 0) {
 		if (errno != EAGAIN && errno != EINPROGRESS) {
-			fcntl(fd, F_SETFL, flags);	
+			(void)fcntl(fd, F_SETFL, flags);	
 			return (-2);
 		}
 	}
@@ -185,7 +201,7 @@ static int __connect_client_sock(int fd, const struct sockaddr *saptr, socklen_t
 		return (-1);	/* select error: sockfd not set*/
 
  done:
-	fcntl(fd, F_SETFL, flags);	
+	(void)fcntl(fd, F_SETFL, flags);
 	if (error) {
 		close(fd);	
 		errno = error;
