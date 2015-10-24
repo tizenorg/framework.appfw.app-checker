@@ -27,7 +27,7 @@
 #include <sys/stat.h>
 #include <errno.h>
 #include <fcntl.h>
-
+#include <time.h>
 
 #include "ac_sock.h"
 #include "internal.h"
@@ -84,7 +84,7 @@ int _create_server_sock()
 	saddr.sun_family = AF_UNIX;
 	snprintf(saddr.sun_path, UNIX_PATH_MAX, "%s",AC_SOCK_NAME);
 	unlink(saddr.sun_path);
-	
+
 	if (bind(fd, (struct sockaddr *)&saddr, sizeof(saddr)) < 0) {
 		_E("bind error");
 		close(fd);
@@ -104,7 +104,7 @@ int _create_server_sock()
 		_E("listen error");
 		close(fd);
 		return -1;
-	}	
+	}
 
 	return fd;
 }
@@ -139,7 +139,12 @@ int _create_client_sock()
 	if (ret < -1) {
 		_E("maybe peer not launched or peer daed\n");
 		if (retry > 0) {
-			usleep(100 * 1000);
+			struct timespec time = {
+				.tv_sec = 0,
+				.tv_nsec = 1000 * 1000 * 100
+			};
+
+			nanosleep(&time, NULL);
 			retry--;
 			goto retry_con;
 		}

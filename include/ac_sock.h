@@ -35,7 +35,7 @@ enum ac_cmd {
 };
 
 #define AC_SOCK_NAME "/tmp/ac-socket"
-#define AC_SOCK_MAXBUFF 65535
+#define AC_SOCK_MAXBUFF 131071
 
 typedef struct _ac_pkt_t {
 	int cmd;
@@ -51,4 +51,3 @@ int _send_result_to_server(int fd, int res);
 
 
 #endif
-

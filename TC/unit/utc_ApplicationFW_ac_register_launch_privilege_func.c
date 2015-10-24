@@ -67,7 +67,7 @@ static void cleanup(void)
 static void utc_ApplicationFW_ac_register_launch_privilege_func_01(void)
 {
 	int r = AC_R_ERROR;
-	r = ac_register_launch_privilege("org.tizen.calculator", "deb");
+	r = ac_register_launch_privilege("com.samsung.calculator", "deb");
 	if (r < 0 && r != AC_R_ENOPULUGINS) {
 		tet_infoline
 		    ("ac_register_launch_privilege()"
@@ -101,7 +101,7 @@ static void utc_ApplicationFW_ac_register_launch_privilege_func_02(void)
 static void utc_ApplicationFW_ac_register_launch_privilege_func_03(void)
 {
 	int r = AC_R_ERROR;
-	r = ac_register_launch_privilege("org.tizen.calculator", NULL);
+	r = ac_register_launch_privilege("com.samsung.calculator", NULL);
 	if (r != AC_R_EINVAL) {
 		tet_infoline
 		    ("ac_register_launch_privilege()"
